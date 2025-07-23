@@ -14,26 +14,19 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 # === CONFIGURATION ===
-DAILY_LIMIT_PER_ACCOUNT = 200
 CONFIG_FILE = 'config.json'
-CHROMEDRIVER_PATH = 'chrome/chromedriver.exe'
-LOG_FILE = 'logs/logs.log'
-STATS_FILE = 'logs/comment_stats.json'
-ERROR_LOG_FILE = 'logs/errors.log'
-COOKIES_DIR = 'cookies'
-HEADLESS_MODE = False
 
 # Create necessary directories and files
 def create_directories_and_files():
     # Create directories
     os.makedirs('logs', exist_ok=True)
-    os.makedirs(COOKIES_DIR, exist_ok=True)
+    os.makedirs('cookies', exist_ok=True)
     
     # Create files if they don't exist
-    for file_path in [LOG_FILE, STATS_FILE, ERROR_LOG_FILE]:
+    for file_path in ['logs/logs.log', 'logs/comment_stats.json', 'logs/errors.log']:
         if not os.path.exists(file_path):
             with open(file_path, 'w', encoding='utf-8') as f:
-                if file_path == STATS_FILE:
+                if 'comment_stats.json' in file_path:
                     json.dump({}, f)
                 else:
                     f.write('')
@@ -130,6 +123,29 @@ create_directories_and_files()
 
 CONFIG = load_config()
 HASHTAGS = CONFIG.get('hashtags')
+
+# Load settings with defaults
+SETTINGS = CONFIG.get('settings', {})
+DAILY_LIMIT_PER_ACCOUNT = SETTINGS.get('daily_limit_per_account', 200)
+COMMENTS_PER_SESSION_MIN = SETTINGS.get('comments_per_session_min', 2)
+COMMENTS_PER_SESSION_MAX = SETTINGS.get('comments_per_session_max', 5)
+DELAY_BETWEEN_COMMENTS_MIN = SETTINGS.get('delay_between_comments_min', 420)
+DELAY_BETWEEN_COMMENTS_MAX = SETTINGS.get('delay_between_comments_max', 480)
+DELAY_BETWEEN_SESSIONS = SETTINGS.get('delay_between_sessions', 5)
+HEADLESS_MODE = SETTINGS.get('headless_mode', False)
+SCROLL_COUNT_FOR_POSTS = SETTINGS.get('scroll_count_for_posts', 2)
+SCROLL_DELAY = SETTINGS.get('scroll_delay', 3)
+LOGIN_DELAY = SETTINGS.get('login_delay', 8)
+COMMENT_BOX_RETRIES = SETTINGS.get('comment_box_retries', 5)
+POST_BUTTON_WAIT_ATTEMPTS = SETTINGS.get('post_button_wait_attempts', 10)
+
+# Load paths with defaults
+PATHS = CONFIG.get('paths', {})
+CHROMEDRIVER_PATH = PATHS.get('chromedriver_path', 'chrome/chromedriver.exe')
+LOG_FILE = PATHS.get('log_file', 'logs/logs.log')
+STATS_FILE = PATHS.get('stats_file', 'logs/comment_stats.json')
+ERROR_LOG_FILE = PATHS.get('error_log_file', 'logs/errors.log')
+COOKIES_DIR = PATHS.get('cookies_dir', 'cookies')
 
 # === Helper Functions ===
 def strip_non_bmp(text):
@@ -249,7 +265,7 @@ class InstagramBot:
         try:
             self.driver.find_element(By.NAME, 'username').send_keys(self.username)
             self.driver.find_element(By.NAME, 'password').send_keys(self.password + Keys.RETURN)
-            time.sleep(8)
+            time.sleep(LOGIN_DELAY)
 
             if "challenge" in self.driver.current_url:
                 self.log("⚠️ Challenge or 2FA detected. Exiting...")
@@ -274,9 +290,9 @@ class InstagramBot:
         try:
             self.driver.get(f'https://www.instagram.com/explore/tags/{tag[1:]}/')
             time.sleep(5)
-            for _ in range(2):
+            for _ in range(SCROLL_COUNT_FOR_POSTS):
                 self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                time.sleep(3)
+                time.sleep(SCROLL_DELAY)
             links = self.driver.find_elements(By.TAG_NAME, 'a')
             return list({l.get_attribute('href') for l in links if '/p/' in l.get_attribute('href')})
         except Exception as e:
@@ -301,7 +317,7 @@ class InstagramBot:
                 self.log(f"Error clicking comment icon: {e}")
 
             comment_box = None
-            for attempt in range(5):
+            for attempt in range(COMMENT_BOX_RETRIES):
                 try:
                     comment_box = self.driver.find_element(By.XPATH, "//textarea[@aria-label='Add a comment…']")
                     self.driver.execute_script("arguments[0].scrollIntoView(true);", comment_box)
@@ -312,10 +328,10 @@ class InstagramBot:
                     if comment_box.is_displayed() and comment_box.is_enabled():
                         break
                 except StaleElementReferenceException as e:
-                    self.log(f"[Try {attempt+1}/5] Stale element: retrying...")
+                    self.log(f"[Try {attempt+1}/{COMMENT_BOX_RETRIES}] Stale element: retrying...")
                     time.sleep(1)
                 except Exception as e:
-                    self.log(f"[Try {attempt+1}/5] Failed to locate/focus comment box: {e}")
+                    self.log(f"[Try {attempt+1}/{COMMENT_BOX_RETRIES}] Failed to locate/focus comment box: {e}")
                     time.sleep(1)
 
             if not comment_box:
@@ -333,7 +349,7 @@ class InstagramBot:
 
             time.sleep(1)
 
-            for _ in range(10):
+            for _ in range(POST_BUTTON_WAIT_ATTEMPTS):
                 try:
                     post_btn = self.driver.find_element(By.XPATH, "//div[@role='button' and text()='Post']")
                     if post_btn.is_enabled():
@@ -391,7 +407,10 @@ if __name__ == "__main__":
             time.sleep(2)
             continue
 
-        limit_this_session = min(random.randint(2, 5), DAILY_LIMIT_PER_ACCOUNT - used)
+        limit_this_session = min(
+            random.randint(COMMENTS_PER_SESSION_MIN, COMMENTS_PER_SESSION_MAX), 
+            DAILY_LIMIT_PER_ACCOUNT - used
+        )
         print(f"[>] Starting session for {username} (target: {limit_this_session} comments)")
 
         try:
@@ -415,7 +434,7 @@ if __name__ == "__main__":
                         save_links_for_account(stats, username, tag, url, comment)
                         stats[username][today()]["count"] += 1
                         save_stats(stats)
-                        delay = random.randint(420, 480)
+                        delay = random.randint(DELAY_BETWEEN_COMMENTS_MIN, DELAY_BETWEEN_COMMENTS_MAX)
                         bot.log(f"Waiting {delay} sec...")
                         time.sleep(delay)
 
@@ -426,4 +445,4 @@ if __name__ == "__main__":
             log_error_to_file(f"{username}: {e}")
             continue
 
-        time.sleep(5)
+        time.sleep(DELAY_BETWEEN_SESSIONS)
