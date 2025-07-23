@@ -53,7 +53,7 @@ nano config.json
 
 ### 2. **Install Dependencies**
 ```bash
-pip install selenium
+pip install -r requirements.txt
 ```
 
 ### 3. **Download ChromeDriver**
