@@ -15,14 +15,121 @@ from selenium.webdriver.support import expected_conditions as EC
 
 # === CONFIGURATION ===
 DAILY_LIMIT_PER_ACCOUNT = 200
-COMMENTS_FILE = 'comments.txt'
-ACCOUNTS_FILE = 'accounts.txt'
-CHROMEDRIVER_PATH = 'chromedriver.exe'
-HASHTAGS = ['#freepalestine', '#gazaunderattack', '#savepalestine']
-LOG_FILE = 'log.txt'
-STATS_FILE = 'comment_stats.json'
+CONFIG_FILE = 'config.json'
+CHROMEDRIVER_PATH = 'chrome/chromedriver.exe'
+LOG_FILE = 'logs/logs.log'
+STATS_FILE = 'logs/comment_stats.json'
+ERROR_LOG_FILE = 'logs/errors.log'
 COOKIES_DIR = 'cookies'
 HEADLESS_MODE = False
+
+# Create necessary directories and files
+def create_directories_and_files():
+    # Create directories
+    os.makedirs('logs', exist_ok=True)
+    os.makedirs(COOKIES_DIR, exist_ok=True)
+    
+    # Create files if they don't exist
+    for file_path in [LOG_FILE, STATS_FILE, ERROR_LOG_FILE]:
+        if not os.path.exists(file_path):
+            with open(file_path, 'w', encoding='utf-8') as f:
+                if file_path == STATS_FILE:
+                    json.dump({}, f)
+                else:
+                    f.write('')
+
+# Load configuration from JSON
+def load_config():
+    if not os.path.exists(CONFIG_FILE):
+        print("=" * 60)
+        print("❌ ERROR: Configuration file not found!")
+        print("=" * 60)
+        print(f"The required file '{CONFIG_FILE}' is missing from the project root.")
+        print()
+        print("📋 To fix this issue:")
+        print("1. Copy 'config-example.json' to 'config.json'")
+        print("2. Edit 'config.json' with your Instagram accounts and settings")
+        print()
+        print("💡 The config.json file should contain:")
+        print("   • accounts: Array of Instagram username/password objects")
+        print("   • comments: Array of comments to post")
+        print("   • hashtags: Array of hashtags to target")
+        print()
+        print("Example structure:")
+        print("""   {
+     "accounts": [
+       {"username": "your_username", "password": "your_password"}
+     ],
+     "comments": ["Great post!", "Love this! ❤️"],
+     "hashtags": ["#example", "#hashtag"]
+   }""")
+        print("=" * 60)
+        exit(1)
+    
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+    except json.JSONDecodeError as e:
+        print("=" * 60)
+        print("❌ ERROR: Invalid JSON in config.json!")
+        print("=" * 60)
+        print(f"JSON parsing error: {e}")
+        print()
+        print("📋 To fix this issue:")
+        print("1. Check your config.json file for syntax errors")
+        print("2. Use a JSON validator to verify the format")
+        print("3. Ensure all strings are properly quoted")
+        print("4. Check for missing commas or brackets")
+        print("=" * 60)
+        exit(1)
+    
+    # Validate required fields
+    validation_errors = []
+    
+    if not config.get('accounts'):
+        validation_errors.append("• Missing or empty 'accounts' array")
+    elif not isinstance(config['accounts'], list):
+        validation_errors.append("• 'accounts' must be an array")
+    else:
+        for i, account in enumerate(config['accounts']):
+            if not isinstance(account, dict):
+                validation_errors.append(f"• Account {i+1} must be an object")
+            elif not account.get('username') or not account.get('password'):
+                validation_errors.append(f"• Account {i+1} missing 'username' or 'password'")
+    
+    if not config.get('comments'):
+        validation_errors.append("• Missing or empty 'comments' array")
+    elif not isinstance(config['comments'], list):
+        validation_errors.append("• 'comments' must be an array")
+    
+    if not config.get('hashtags'):
+        validation_errors.append("• Missing or empty 'hashtags' array")
+    elif not isinstance(config['hashtags'], list):
+        validation_errors.append("• 'hashtags' must be an array")
+    
+    if validation_errors:
+        print("=" * 60)
+        print("❌ ERROR: Invalid config.json structure!")
+        print("=" * 60)
+        print("The following issues were found in your config.json:")
+        print()
+        for error in validation_errors:
+            print(error)
+        print()
+        print("📋 To fix this issue:")
+        print("1. Check the config-example.json file for the correct structure")
+        print("2. Ensure all required fields are present and properly formatted")
+        print("3. Verify that accounts have both 'username' and 'password' fields")
+        print("=" * 60)
+        exit(1)
+    
+    return config
+
+# Initialize directories and files
+create_directories_and_files()
+
+CONFIG = load_config()
+HASHTAGS = CONFIG.get('hashtags')
 
 # === Helper Functions ===
 def strip_non_bmp(text):
@@ -32,7 +139,7 @@ def today():
     return datetime.now().strftime("%Y-%m-%d")
 
 def log_error_to_file(message):
-    with open('errors.log', 'a', encoding='utf-8') as f:
+    with open(ERROR_LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(f"[{datetime.now()}] {message}\n")
 
 def save_links_for_account(stats, username, tag, url, comment):
@@ -84,11 +191,11 @@ class InstagramBot:
             f.write(line + '\n')
 
     def load_comments(self):
-        if not os.path.exists(COMMENTS_FILE):
-            print("[X] comments.txt not found")
+        comments = CONFIG.get('comments', [])
+        if not comments:
+            print("[X] No comments found in config.json")
             exit()
-        with open(COMMENTS_FILE, 'r', encoding='utf-8') as f:
-            return [strip_non_bmp(l.strip()) for l in f if l.strip()]
+        return [strip_non_bmp(comment) for comment in comments]
 
     def start_browser(self):
         options = Options()
@@ -263,13 +370,13 @@ def save_stats(stats):
         json.dump(stats, f, indent=2)
 
 def load_accounts():
-    if not os.path.exists(ACCOUNTS_FILE):
-        print(f"[X] File not found: {ACCOUNTS_FILE}")
+    accounts = CONFIG.get('accounts', [])
+    if not accounts:
+        print("[X] No accounts found in config.json")
         exit()
-    with open(ACCOUNTS_FILE, 'r', encoding='utf-8') as f:
-        accounts = [tuple(line.strip().split(':', 1)) for line in f if ':' in line.strip()]
-    random.shuffle(accounts)
-    return accounts
+    account_tuples = [(acc['username'], acc['password']) for acc in accounts]
+    random.shuffle(account_tuples)
+    return account_tuples
 
 # === Main Execution Loop ===
 if __name__ == "__main__":

@@ -1,0 +1,16 @@
+{
+  "accounts": [
+    { "username": "username1", "password": "password1" },
+    { "username": "username2", "password": "password2" }
+  ],
+  "comments": [
+    "Great post!",
+    "Love this content ❤️",
+    "🔥🔥🔥"
+  ],
+  "hashtags": [
+    "#hashtags_example_1",
+    "#hashtags_example_2",
+    "#hashtags_example_3"
+  ]
+}
