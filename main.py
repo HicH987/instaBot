@@ -255,6 +255,14 @@ class InstagramBot:
         options = Options()
         if HEADLESS_MODE:
             options.add_argument("--headless=new")
+        
+        # Force English language
+        options.add_argument("--lang=en-US")
+        options.add_argument("--accept-lang=en-US,en")
+        options.add_experimental_option('prefs', {
+            'intl.accept_languages': 'en,en_US'
+        })
+        
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_argument("--window-size=1920,1080")
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
