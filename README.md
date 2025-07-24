@@ -90,11 +90,20 @@ Example `config.json`:
     "comments_per_session_max": 5,
     "delay_between_comments_min": 420,
     "delay_between_comments_max": 480,
-    "headless_mode": false
+    "delay_between_sessions": 5,
+    "headless_mode": false,
+    "scroll_count_for_posts": 2,
+    "scroll_delay": 3,
+    "login_delay": 8,
+    "comment_box_retries": 5,
+    "post_button_wait_attempts": 10
   },
   "paths": {
-    "cookies_dir": "cookies",
-    "logs_dir": "logs"
+    "chromedriver_path": "chrome/chromedriver.exe",
+    "log_file": "logs/logs.log",
+    "stats_file": "logs/comment_stats.json",
+    "error_log_file": "logs/errors.log",
+    "cookies_dir": "cookies"
   }
 }
 ```
