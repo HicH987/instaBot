@@ -1,106 +1,105 @@
+Here's the **fully updated and cleaned-up `README.md`** with better structure, clearer guidance, reduced redundancy, and the **ChromeDriver download step removed**, since it's already included in the repo:
+
+---
+
 # 🤖 Instagram Automation Bot
 
-A sophisticated Instagram commenting bot that operates across multiple accounts with intelligent rotation, rate limiting, and natural behavior patterns. Built with Python and Selenium for reliable automation.
+Automate Instagram commenting across multiple accounts with human-like behavior, delays, and smart limits. Built with Python + Selenium.
 
 ---
 
-## 🎯 Purpose & Vision
+## 🎯 Purpose
 
-This project was developed as a tool for **digital advocacy** and awareness campaigns. It enables consistent, automated engagement across Instagram hashtags to amplify important messages and causes.
-
-> �️ **Ethical Use Only**: This tool is designed for peaceful digital activism, not spam or commercial abuse. Use responsibly and respect Instagram's community guidelines.
+Designed for **digital activism** and **awareness campaigns** — not for spam or commercial use. Use responsibly and ethically.
 
 ---
 
-## ✨ Key Features
+## ✨ Features
 
-### 🔄 **Smart Account Management**
-- **Multi-account rotation** with infinite cycling
-- **Session-based commenting** (2-5 comments per login)
-- **Daily limits per account** (default: 200 comments)
-- **Cookie-based login** to skip repeated authentication
+### 🔄 Account Rotation
 
-### 🧠 **Intelligent Behavior**
-- **Human-like timing** with 7-8 minute delays between comments
-- **Duplicate prevention** - never comments on the same post twice
-- **Random comment selection** from your custom list
-- **Randomized hashtag targeting** for natural engagement patterns
+* Rotate unlimited accounts in a loop
+* 2–5 comments per session, up to 200/day (default)
+* Cookie-based login (fewer repeated logins)
 
-### 📊 **Comprehensive Tracking**
-- **Detailed logging** with timestamps and activity records
-- **Comment statistics** tracking per account and date
-- **Error monitoring** with automatic retry mechanisms
-- **Link archiving** to prevent duplicate comments
+### 🧠 Human-Like Behavior
 
-### ⚙️ **Fully Configurable**
-- **JSON-based configuration** - no code editing required
-- **Customizable timing and limits** for different use cases
-- **Flexible file paths** and directory structure
-- **Headless mode** support for server deployment
+* Delays of 7–8 minutes between comments
+* Random comments and hashtags
+* Never comments on the same post twice
 
----
+### 📊 Tracking & Logs
 
-## � Quick Start
+* Logs with timestamps
+* Comment statistics per account and per day
+* Post archive to avoid repeats
+* Retry system on errors
 
-### 1. **Setup Configuration**
-```bash
-# Copy the example configuration
-cp config-example.json config.json
+### ⚙️ Easy Configuration
 
-# Edit with your settings
-nano config.json
-```
-
-### 2. **Install Dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-### 3. **Download ChromeDriver**
-- Download from [ChromeDriver](https://chromedriver.chromium.org/)
-- Place in `chrome/chromedriver.exe`
-- Ensure version matches your Chrome browser
-
-### 4. **Run the Bot**
-```bash
-python main.py
-```
+* JSON-based config — no coding required
+* Adjustable limits, delays, and file paths
+* Headless mode supported (for servers)
 
 ---
 
-## 📋 Configuration Guide
+## 🚀 Quick Start
 
-### **Basic Structure**
+1. **Set Up Configuration**
+
+   ```bash
+   cp config-example.json config.json
+   nano config.json
+   ```
+   use the example (config-example.json) file to set your accounts, comments, hashtags, and settings.
+
+2. **Install Dependencies**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run the Bot**
+
+   ```bash
+   python main.py
+   ```
+
+---
+
+## ⚙️ Config Overview
+
+Example `config.json`:
+
 ```json
 {
   "accounts": [
-    {"username": "account1", "password": "password1"},
-    {"username": "account2", "password": "password2"}
+    {"username": "user1", "password": "pass1"}
   ],
   "comments": [
     "Great post!",
-    "Love this content ❤️",
     "Amazing work!"
   ],
   "hashtags": [
     "#photography",
-    "#art",
-    "#inspiration"
+    "#art"
   ],
-  "settings": { ... },
-  "paths": { ... }
+  "settings": {
+    "daily_limit_per_account": 200,
+    "comments_per_session_min": 2,
+    "comments_per_session_max": 5,
+    "delay_between_comments_min": 420,
+    "delay_between_comments_max": 480,
+    "headless_mode": false
+  },
+  "paths": {
+    "cookies_dir": "cookies",
+    "logs_dir": "logs"
+  }
 }
 ```
 
-### **Key Settings**
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `daily_limit_per_account` | 200 | Max comments per account per day |
-| `comments_per_session_min/max` | 2-5 | Comments per login session |
-| `delay_between_comments_min/max` | 420-480s | Wait time between comments (7-8 min) |
-| `headless_mode` | false | Run browser in background |
-
-📖 **For detailed configuration help, see [doc/CONFIG-README.md](doc/CONFIG-README.md)**
+📘 Full config guide: [`doc/CONFIG-README.md`](doc/CONFIG-README.md)
 
 ---
 
@@ -128,11 +127,43 @@ Account C → Login → 2-5 Comments → Logout
    - Logout and move to next account
 4. **Repeat Forever** until manually stopped
 
-### **Safety Features**
-- **Rate Limiting**: Built-in delays prevent Instagram detection
-- **Duplicate Prevention**: Never comments on same post twice
-- **Error Recovery**: Automatic retries with backoff strategies
-- **Cookie Management**: Reduces login frequency to avoid suspicion
+---
+
+## 🛡️ Safety Guidelines
+
+### ✅ Best Practices
+
+* Limit to \~300 comments/day/account
+* Keep 7–8 min delay between comments
+* Avoid running non-stop — allow rest breaks
+* Start slow and increase gradually
+
+### ⚠️ Account Tips
+
+* Use alternate (not main) accounts
+* Disable 2FA (bot will skip 2FA accounts)
+* Monitor logs for errors or blocks
+* Keep backups ready
+
+### 📝 Comment Strategy
+
+* Use 10–15 meaningful, varied comments
+* Rotate hashtags frequently
+* Avoid spammy or repetitive phrases
+
+---
+
+## 🧾 Logs & Troubleshooting
+
+* `logs/log.log` — Activity log
+* `logs/comment_stats.json` — Daily comment stats
+
+| Problem            | Solution                                    |
+| ------------------ | ------------------------------------------- |
+| ChromeDriver error | Already included in repo — no action needed |
+| Login failed       | Check credentials or disable 2FA            |
+| No posts found     | Use more popular hashtags                   |
+| Bot too fast/slow  | Adjust delay in config                      |
 
 ---
 
@@ -140,106 +171,49 @@ Account C → Login → 2-5 Comments → Logout
 
 ```
 instaBot/
-├── main.py                 # Main bot script
-├── config.json             # Your configuration (create from example)
-├── config-example.json     # Configuration template
-├── requirements.txt        # Python dependencies
-├── README.md              # This file
-├── .gitignore             # Git ignore rules
 ├── chrome/
-│   ├── chromedriver.exe   # ChromeDriver executable
-│   └── ChromeSetup.exe    # Chrome browser installer
+│   ├── chromedriver.exe    # ChromeDriver included
+│   └── ChromeSetup.exe     # Chrome browser installer
 ├── doc/
-│   └── CONFIG-README.md   # Detailed configuration guide
-├── logs/                  # Auto-created directory
-│   ├── log.log           # Activity logs (gitignored)
-│   └── comment_stats.json # Comment statistics (gitignored)
-└── cookies/               # Auto-created directory (gitignored)
-    └── account1.json      # Saved login cookies (auto-generated)
+│   └── CONFIG-README.md    # Full config guide
+├── logs/                   # Logs (auto-generated)
+├── cookies/                # Saved cookies (auto-generated)
+├── main.py                 # Main bot script
+├── config.json             # Your configuration
+├── config-example.json     # Template config
+├── requirements.txt        # Python dependencies
+└── README.md               # This file
 ```
 
-### **Important Notes:**
-- 📁 **Auto-created folders**: `logs/` and `cookies/` are created automatically
-- 🚫 **Gitignored files**: Log files, stats, and cookies are excluded from version control
-- 📝 **config.json**: Create from `config-example.json` (also gitignored for security)
-
-### **Git Ignore Protection**
-The `.gitignore` file protects sensitive data by excluding:
-- 🔒 **config.json** - Your account credentials
-- 📁 **logs/** - All activity logs and statistics  
-- 🍪 **cookies/** - Saved login sessions
-- 🐍 **Python cache** - \_\_pycache\_\_ and .pyc files
-- 💻 **IDE files** - .vscode, .idea folders
-- 🌐 **Virtual environments** - venv/, .env/ folders
-
 ---
 
-## 🛡️ Safety & Best Practices
+## ⚖️ Legal Disclaimer
 
-### **Rate Limiting**
-- ✅ Keep daily limits under 300 comments per account
-- ✅ Use 7-8 minute delays between comments minimum
-- ✅ Don't run 24/7 - give accounts regular breaks
-- ✅ Start with lower limits and gradually increase
+This tool interacts with Instagram and **may violate their [Terms of Service](https://help.instagram.com/581066165581870)**.
 
-### **Account Safety**
-- ⚠️ Use dedicated accounts, not your main Instagram
-- ⚠️ Avoid accounts with 2FA enabled (bot will skip them)
-- ⚠️ Monitor error logs for login issues or blocks
-- ⚠️ Have backup accounts ready
+### You must:
 
-### **Content Strategy**
-- 📝 Use 10-15 varied, meaningful comments
-- 📝 Mix hashtag targets regularly
-- 📝 Avoid repetitive or spammy language
-- 📝 Keep comments relevant to your cause
+* 🚫 Not use it for spam, abuse, or promotion
+* ✅ Use it only for ethical, peaceful campaigns
+* ⚠️ Accept risk — account suspension is possible
+* 📋 Be responsible for your usage
 
----
+**Recommended Use:**
 
-## � Monitoring & Troubleshooting
-
-### **Log Files**
-- **`logs/log.log`**: Real-time activity and session info
-- **`logs/comment_stats.json`**: Detailed comment history and counts
-
-### **Common Issues**
-
-| Problem | Solution |
-|---------|----------|
-| "ChromeDriver not found" | Download ChromeDriver matching your Chrome version |
-| "Login failed" | Check credentials, disable 2FA, or account may be blocked |
-| "No posts found" | Try more popular hashtags or check hashtag validity |
-| Bot too slow/fast | Adjust delay settings in config.json |
-
----
-
-## ⚖️ Legal & Ethical Disclaimer
-
-This tool interacts with Instagram and may violate their [Terms of Service](https://help.instagram.com/581066165581870).
-
-### **Important Notes:**
-- 🚫 **Not for spam or commercial promotion**
-- 🚫 **Not for harassment or abuse**
-- ✅ **Intended for peaceful digital activism only**
-- ⚠️ **Use at your own risk** - accounts may be suspended
-- 📋 **You are responsible** for how you use this tool
-
-### **Recommended Use:**
-- Humanitarian awareness campaigns
-- Social cause advocacy
-- Educational content promotion
-- Community engagement for positive causes
+* Advocacy and awareness
+* Nonprofit campaigns
+* Community engagement for good causes
 
 ---
 
 ## 🤝 Contributing
 
-This project is designed for ethical digital activism. If you have improvements or bug fixes that enhance safety and reliability, contributions are welcome.
+Want to help? PRs that improve safety, reliability, or usability are welcome.
 
 ---
 
-## 📞 Support
+## 📞 Need Help?
 
-For configuration help, see [doc/CONFIG-README.md](doc/CONFIG-README.md)
+See [`doc/CONFIG-README.md`](doc/CONFIG-README.md) for setup tips.
 
-**Remember**: This tool is most effective when used responsibly and in moderation. Quality engagement beats quantity every time.
+**Reminder:** This tool is most effective when used responsibly and in moderation.
