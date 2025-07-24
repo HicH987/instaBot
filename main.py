@@ -47,6 +47,8 @@ def load_config():
         print("   • accounts: Array of Instagram username/password objects")
         print("   • comments: Array of comments to post")
         print("   • hashtags: Array of hashtags to target")
+        print("   • settings: Configuration for timing and behavior")
+        print("   • paths: File and directory paths")
         print()
         print("Example structure:")
         print("""   {
@@ -54,7 +56,28 @@ def load_config():
        {"username": "your_username", "password": "your_password"}
      ],
      "comments": ["Great post!", "Love this! ❤️"],
-     "hashtags": ["#example", "#hashtag"]
+     "hashtags": ["#example", "#hashtag"],
+     "settings": {
+       "daily_limit_per_account": 200,
+       "comments_per_session_min": 2,
+       "comments_per_session_max": 5,
+       "delay_between_comments_min": 420,
+       "delay_between_comments_max": 480,
+       "delay_between_sessions": 5,
+       "headless_mode": false,
+       "scroll_count_for_posts": 2,
+       "scroll_delay": 3,
+       "login_delay": 8,
+       "comment_box_retries": 5,
+       "post_button_wait_attempts": 10
+     },
+     "paths": {
+       "chromedriver_path": "chrome/chromedriver.exe",
+       "log_file": "logs/logs.log",
+       "stats_file": "logs/comment_stats.json",
+       "error_log_file": "logs/errors.log",
+       "cookies_dir": "cookies"
+     }
    }""")
         print("=" * 60)
         exit(1)
@@ -100,6 +123,18 @@ def load_config():
     elif not isinstance(config['hashtags'], list):
         validation_errors.append("• 'hashtags' must be an array")
     
+    # Validate settings section
+    if not config.get('settings'):
+        validation_errors.append("• Missing 'settings' section")
+    elif not isinstance(config['settings'], dict):
+        validation_errors.append("• 'settings' must be an object")
+    
+    # Validate paths section
+    if not config.get('paths'):
+        validation_errors.append("• Missing 'paths' section")
+    elif not isinstance(config['paths'], dict):
+        validation_errors.append("• 'paths' must be an object")
+    
     if validation_errors:
         print("=" * 60)
         print("❌ ERROR: Invalid config.json structure!")
@@ -113,6 +148,8 @@ def load_config():
         print("1. Check the config-example.json file for the correct structure")
         print("2. Ensure all required fields are present and properly formatted")
         print("3. Verify that accounts have both 'username' and 'password' fields")
+        print("4. Make sure 'settings' and 'paths' sections are included")
+        print("5. Copy config-example.json to config.json if you're missing sections")
         print("=" * 60)
         exit(1)
     
