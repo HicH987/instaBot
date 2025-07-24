@@ -42,6 +42,7 @@ def load_config():
         print("📋 To fix this issue:")
         print("1. Copy 'config-example.json' to 'config.json'")
         print("2. Edit 'config.json' with your Instagram accounts and settings")
+        print("3. For more information, refer to the doc/CONFIG-README.md file")
         print()
         print("💡 The config.json file should contain:")
         print("   • accounts: Array of Instagram username/password objects")
